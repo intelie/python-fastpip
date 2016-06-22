@@ -9,11 +9,11 @@ a good visualization of time series with high dimensionality.
 Example
 -------
 
-```python
+::
+
     >>> from fastpip import pip
     >>> pip([(0, 0), (1, 1), (2, 2), (3, 1), (4, 0), (5, 1), (6, 2), (7, 1), (8, 0)], 5)
     [(0, 0), (2, 2), (4, 0), (6, 2), (8, 0)]
-```
 
 
 References
