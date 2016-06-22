@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
-__all__ = ['test_data']
-
-test_data = [
+[
   {
     "x":8.55,
     "y":-2623.15

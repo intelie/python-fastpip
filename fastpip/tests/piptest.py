@@ -1,18 +1,43 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase, expectedFailure
+import os
+import json
 from functools import partial
 
 from fastpip import pip
-from .test_data import test_data
 
 __all__ = ['TestFastPip', 'TestSimplePip']
 
 
 class BaseTestPip(TestCase):
 
+    __samples_cache__ = {}
+
     def setUp(self):
-        self.data = [(item.get('x'), item.get('y')) for item in test_data]
-        self.data_length = len(self.data)
+        super(BaseTestPip, self).setUp()
+        self.sample_1 = lambda: self.load_sample('sample_1')
+        self.sample_2 = lambda: self.load_sample('sample_2')
+        self.sample_3 = lambda: self.load_sample('sample_3')
+
+    def load_sample(self, name):
+        if name not in self.__samples_cache__:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            filename = os.path.join(current_dir, name)
+            with open(filename) as handle:
+                self.__samples_cache__[name] = json.load(handle)
+
+        return self.__samples_cache__[name]
+
+    def assertAlmostEqualCurves(self, curve_a, curve_b, msg=None):
+        with_seven_places = lambda value: round(value, 7)
+        curve_with_seven_places = lambda curve: [
+            (with_seven_places(item[0]), with_seven_places(item[1]))
+            for item in curve
+        ]
+
+        return self.assertEqual(
+            curve_with_seven_places(curve_a), curve_with_seven_places(curve_b), msg=msg
+        )
 
     def test_empty_input(self):
         data = []
@@ -44,11 +69,77 @@ class BaseTestPip(TestCase):
         self.assertEqual(self.pip(data, 5), expected)
 
     def test_result_should_always_be_the_same_for_a_given_input(self):
-        first_result = pip(self.data, self.data_length/10)
+        data = [(item.get('x'), item.get('y')) for item in self.sample_1()]
+        data_length = len(data)
+
+        first_result = pip(data, data_length/10)
         for i in range(3):
-            self.assertEqual(
-                self.pip(self.data, self.data_length/10), first_result, "Result has changed on iteration {}".format(i+1)
+            self.assertAlmostEqualCurves(
+                self.pip(data, data_length/10), first_result, "Result has changed on iteration {}".format(i+1)
             )
+
+    def test_behaviour_changes_according_to_the_distance_function_used_1(self):
+        data = [(item.get('x'), item.get('y')) for item in self.sample_1()]
+
+        vertical_result = pip(data, 300, distance='vertical')
+        euclidean_result = pip(data, 300, distance='euclidean')
+        self.assertNotEqual(vertical_result, euclidean_result)
+
+    def test_behaviour_changes_according_to_the_distance_function_used_2(self):
+        data = self.sample_2()
+
+        vertical_result = pip(data, 300, distance='vertical')
+        euclidean_result = pip(data, 300, distance='euclidean')
+        self.assertNotEqual(vertical_result, euclidean_result)
+
+    def test_behaviour_changes_according_to_the_distance_function_used_3(self):
+        data = self.sample_3()
+
+        vertical_result = pip(data, 300, distance='vertical')
+        euclidean_result = pip(data, 300, distance='euclidean')
+        self.assertNotEqual(vertical_result, euclidean_result)
+
+    def test_behaviour_may_change_with_batch_or_stream_processing_using_vertical_distance_1(self):
+        data = [(item.get('x'), item.get('y')) for item in self.sample_1()]
+
+        stream_result = pip(data, 300, distance='vertical', stream_mode=True)
+        batch_result = pip(data, 300, distance='vertical', stream_mode=False)
+        self.assertNotEqual(stream_result, batch_result)
+
+    def test_behaviour_may_change_with_batch_or_stream_processing_using_vertical_distance_2(self):
+        data = self.sample_2()
+
+        stream_result = pip(data, 300, distance='vertical', stream_mode=True)
+        batch_result = pip(data, 300, distance='vertical', stream_mode=False)
+        self.assertNotEqual(stream_result, batch_result)
+
+    def test_behaviour_may_change_with_batch_or_stream_processing_using_vertical_distance_3(self):
+        data = self.sample_3()
+
+        stream_result = pip(data, 300, distance='vertical', stream_mode=True)
+        batch_result = pip(data, 300, distance='vertical', stream_mode=False)
+        self.assertNotEqual(stream_result, batch_result)
+
+    def test_behaviour_may_change_with_batch_or_stream_processing_using_euclidean_distance_1(self):
+        data = [(item.get('x'), item.get('y')) for item in self.sample_1()]
+
+        stream_result = pip(data, 300, distance='euclidean', stream_mode=True)
+        batch_result = pip(data, 300, distance='euclidean', stream_mode=False)
+        self.assertNotEqual(stream_result, batch_result)
+
+    def test_behaviour_may_change_with_batch_or_stream_processing_using_euclidean_distance_2(self):
+        data = self.sample_2()
+
+        stream_result = pip(data, 300, distance='euclidean', stream_mode=True)
+        batch_result = pip(data, 300, distance='euclidean', stream_mode=False)
+        self.assertNotEqual(stream_result, batch_result)
+
+    def test_behaviour_may_change_with_batch_or_stream_processing_using_euclidean_distance_3(self):
+        data = self.sample_3()
+
+        stream_result = pip(data, 300, distance='euclidean', stream_mode=True)
+        batch_result = pip(data, 300, distance='euclidean', stream_mode=False)
+        self.assertNotEqual(stream_result, batch_result)
 
 
 class TestFastPip(BaseTestPip):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging as default_logging
 import sys
+import math
 
 __all__ = ['pip']
 
@@ -156,19 +157,52 @@ class PipHeap(object):
             current = current.right
 
 
-def pip(data, k, fast=True, stream_mode=True):
-    if fast:
-        result = fastpip(data, k, stream_mode=stream_mode)
+def vertical_distance(left, current, right):
+    EPSILON = 1e-06
+    a_x, a_y = left
+    b_x, b_y = current
+    c_x, c_y = right
+
+    if (abs(a_x - b_x) < EPSILON) or (abs(b_x - c_x) < EPSILON):
+        result = 0
+    elif (c_x - a_x) == 0:
+        # Otherwise we could have a ZeroDivisionError
+        result = INFINITY
     else:
-        result = simplepip(data, k)
+        result = abs(((a_y + (c_y - a_y) * (b_x - a_x) / (c_x - a_x) - b_y)) * (c_x - a_x))
 
     return result
 
 
-def fastpip(data, k, stream_mode=True):
+def dist(x1, x2, y1, y2):
+    return math.sqrt((x1-x2)**2 + (y1-y2)**2)
+
+
+def euclidean_distance(left, current, right):
+    left_current = dist(left[0], current[0], left[1], current[1])
+    rightcurrent = dist(right[0], current[0], right[1], current[1])
+    return (left_current + rightcurrent) * (right[0] - left[0])
+
+
+def pip(data, k, fast=True, stream_mode=True, distance='vertical'):
+    distance_functions = {
+        'vertical': vertical_distance,
+        'euclidean': euclidean_distance,
+    }
+    distance_function = distance_functions[distance]
+
+    if fast:
+        result = fastpip(data, k, stream_mode=stream_mode, distance_function=distance_function)
+    else:
+        result = simplepip(data, k, distance_function=distance_function)
+
+    return result
+
+
+def fastpip(data, k, stream_mode=True, distance_function=vertical_distance):
 
     if len(data) >= k:
-        heap = PipHeap(verticalDistance)
+        heap = PipHeap(distance_function)
 
         for element in data:
             heap.add(element)
@@ -188,7 +222,7 @@ def fastpip(data, k, stream_mode=True):
     return ret
 
 
-def simplepip(data, k):
+def simplepip(data, k, distance_function=vertical_distance):
     ret = []
 
     for (idx, value) in enumerate(data):
@@ -200,7 +234,7 @@ def simplepip(data, k):
         minij = 0
 
         for j in range(1, len(ret) - 1):
-            d = verticalDistance(ret[j - 1], ret[j], ret[j + 1])
+            d = distance_function(ret[j - 1], ret[j], ret[j + 1])
             if d < miniv:
                 miniv = d
                 minij = j
@@ -208,20 +242,3 @@ def simplepip(data, k):
         del ret[minij]
 
     return ret
-
-
-def verticalDistance(left, current, right):
-    EPSILON = 1e-06
-    a_x, a_y = left
-    b_x, b_y = current
-    c_x, c_y = right
-
-    if (abs(a_x - b_x) < EPSILON) or (abs(b_x - c_x) < EPSILON):
-        result = 0
-    elif (c_x - a_x) == 0:
-        # Otherwise we could have a ZeroDivisionError
-        result = INFINITY
-    else:
-        result = abs(((a_y + (c_y - a_y) * (b_x - a_x) / (c_x - a_x) - b_y)) * (c_x - a_x))
-
-    return result
