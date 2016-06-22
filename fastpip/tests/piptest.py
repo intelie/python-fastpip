@@ -33,9 +33,14 @@ class BaseTestPip(TestCase):
         expected = [(0, 0), (4, 4), (8, 0)]
         self.assertEqual(self.pip(data, 3), expected)
 
+    def test_four_significant_points(self):
+        data = [(0, 0), (1, 1), (2, 0), (3, -1), (4, -2), (5, -3), (6, -2), (7, -1), (8, 0)]
+        expected = [(0, 0), (1, 1), (5, -3), (8, 0)]
+        self.assertEqual(self.pip(data, 4), expected)
+
     def test_five_significant_points(self):
-        data = [(0, 0), (1, 1), (2, 2), (3, 1), (4, 0), (5, 1), (6, 2), (7, 1), (8, 0)]
-        expected = [(0, 0), (2, 2), (4, 0), (6, 2), (8, 0)]
+        data = [(0, 0), (1, 3), (2, 2), (3, 1), (4, 0), (5, 1), (6, 2), (7, 3), (8, 0)]
+        expected = [(0, 0), (1, 3), (4, 0), (7, 3), (8, 0)]
         self.assertEqual(self.pip(data, 5), expected)
 
     def test_result_should_always_be_the_same_for_a_given_input(self):
@@ -63,9 +68,14 @@ class TestFastPip(BaseTestPip):
         expected = [(0, 0), (4, 4), (8, 0)]
         self.assertEqual(self.pip(data, 3, stream_mode=False), expected)
 
+    def test_four_significant_points_in_batch_mode(self):
+        data = [(0, 0), (1, 1), (2, 0), (3, -1), (4, -2), (5, -3), (6, -2), (7, -1), (8, 0)]
+        expected = [(0, 0), (1, 1), (5, -3), (8, 0)]
+        self.assertEqual(self.pip(data, 4, stream_mode=False), expected)
+
     def test_five_significant_points_in_batch_mode(self):
-        data = [(0, 0), (1, 1), (2, 2), (3, 1), (4, 0), (5, 1), (6, 2), (7, 1), (8, 0)]
-        expected = [(0, 0), (2, 2), (4, 0), (6, 2), (8, 0)]
+        data = [(0, 0), (1, 3), (2, 2), (3, 1), (4, 0), (5, 1), (6, 2), (7, 3), (8, 0)]
+        expected = [(0, 0), (1, 3), (4, 0), (7, 3), (8, 0)]
         self.assertEqual(self.pip(data, 5, stream_mode=False), expected)
 
 

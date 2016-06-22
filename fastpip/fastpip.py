@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging as default_logging
-import math
 import sys
 
 __all__ = ['pip']
@@ -169,7 +168,7 @@ def pip(data, k, fast=True, stream_mode=True):
 def fastpip(data, k, stream_mode=True):
 
     if len(data) >= k:
-        heap = PipHeap(eDist)
+        heap = PipHeap(verticalDistance)
 
         for element in data:
             heap.add(element)
@@ -201,7 +200,7 @@ def simplepip(data, k):
         minij = 0
 
         for j in range(1, len(ret) - 1):
-            d = eDist(ret[j - 1], ret[j], ret[j + 1])
+            d = verticalDistance(ret[j - 1], ret[j], ret[j + 1])
             if d < miniv:
                 miniv = d
                 minij = j
@@ -211,11 +210,18 @@ def simplepip(data, k):
     return ret
 
 
-def dist(x1, x2, y1, y2):
-    return math.sqrt((x1-x2)**2 + (y1-y2)**2)
+def verticalDistance(left, current, right):
+    EPSILON = 1e-06
+    a_x, a_y = left
+    b_x, b_y = current
+    c_x, c_y = right
 
+    if (abs(a_x - b_x) < EPSILON) or (abs(b_x - c_x) < EPSILON):
+        result = 0
+    elif (c_x - a_x) == 0:
+        # Otherwise we could have a ZeroDivisionError
+        result = INFINITY
+    else:
+        result = abs(((a_y + (c_y - a_y) * (b_x - a_x) / (c_x - a_x) - b_y)) * (c_x - a_x))
 
-def eDist(left, current, right):
-    left_current = dist(left[0], current[0], left[1], current[1])
-    rightcurrent = dist(right[0], current[0], right[1], current[1])
-    return (left_current + rightcurrent) * (right[0] - left[0])
+    return result
