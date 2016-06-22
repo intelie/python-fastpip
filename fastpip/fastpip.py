@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging as default_logging
 import math
+import sys
 
 __all__ = ['pip']
 
@@ -156,7 +157,16 @@ class PipHeap(object):
             current = current.right
 
 
-def pip(data, k, stream_mode=True):
+def pip(data, k, fast=True, stream_mode=True):
+    if fast:
+        result = fastpip(data, k, stream_mode=stream_mode)
+    else:
+        result = simplepip(data, k)
+
+    return result
+
+
+def fastpip(data, k, stream_mode=True):
 
     if len(data) >= k:
         heap = PipHeap(eDist)
@@ -176,6 +186,28 @@ def pip(data, k, stream_mode=True):
         ret = data
 
     logging.debug("pip: started with {} points, returned {} points".format(len(data), len(ret)))
+    return ret
+
+
+def simplepip(data, k):
+    ret = []
+
+    for (idx, value) in enumerate(data):
+        ret.append(value)
+        if len(ret) <= k:
+            continue
+
+        miniv = sys.maxsize
+        minij = 0
+
+        for j in range(1, len(ret) - 1):
+            d = eDist(ret[j - 1], ret[j], ret[j + 1])
+            if d < miniv:
+                miniv = d
+                minij = j
+
+        del ret[minij]
+
     return ret
 
 
