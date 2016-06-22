@@ -46,7 +46,7 @@ def get_readme():
 
 setup(
     name="python-fastpip",
-    version="0.0.5",
+    version="1.0",
     url='https://github.com/intelie/python-fastpip',
     author='Vitor M. A. da Cruz',
     author_email='vitor.mazzi@intelie.com.br',
