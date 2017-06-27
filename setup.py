@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
-import sys
 
 
 class Tox(TestCommand):
@@ -28,12 +28,14 @@ class Tox(TestCommand):
 
 def read_file(filename):
     """Read a file into a string"""
+    open_kwargs = {}
+    if sys.version_info.major == 3:
+        open_kwargs = {'encoding': 'utf-8'}
+
     path = os.path.abspath(os.path.dirname(__file__))
     filepath = os.path.join(path, filename)
-    try:
-        return open(filepath).read()
-    except IOError:
-        return ''
+    with open(filepath, **open_kwargs) as filecontents:
+        return filecontents.read()
 
 
 def get_readme():
